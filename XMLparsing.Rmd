@@ -1,0 +1,275 @@
+---
+title: "R Notebook"
+output:
+  html_document: default
+  html_notebook: default
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+#Install and load XML package if necessary
+```{r}
+#install.packages('XML') 
+library(XML)
+```
+
+#Write all xml files to disk
+```{r}
+library(XML)
+lines   <- readLines("ipg170516.xml")
+start   <- grep('<?xml version="1.0" encoding="UTF-8"?>',lines,fixed=T)
+end     <- c(start[-1]-1,length(lines))
+
+#this code writes xml files to disk
+get.xml <- function(i) {
+  txt <- paste(lines[start[i]:end[i]],collapse="\n")
+  # print(i)
+  writeChar(txt, paste("./xml/","xml", i, ".xml", sep = ""))
+  # return(i)
+}
+
+lapply(1:7255,get.xml)
+```
+
+#Split xml files and save in an object called docs 
+```{r}
+
+library(XML)
+lines   <- readLines("ipg170516.xml")
+start   <- grep('<?xml version="1.0" encoding="UTF-8"?>',lines,fixed=T)
+end     <- c(start[-1]-1,length(lines))
+
+get.xml <- function(i) {
+  txt <- paste(lines[start[i]:end[i]],collapse="\n")
+  # print(i)
+  xmlTreeParse(txt,asText=T)
+  # return(i)
+}
+
+docs <- lapply(1:1451,get.xml)
+
+```
+
+
+#Make csv file containing only shared column names of the 1st 500 patents
+```{r}
+#Find common column names for 1st 10
+commonNames<-names(unlist(xmlToList(docs[[1]])))
+for(i in 2:10){
+namesi<-names(unlist(xmlToList(docs[[i]])))
+commonNames<-Reduce(intersect, list(commonNames, namesi))
+}
+
+commonNames==cancerNames
+nam<-rbind(commonNames, cancerNames)
+FinalNames<-unique(c(commonNames,cancerNames))
+#Find common column names for 1st 500
+commonNames<-names(unlist(xmlToList(docs[[1]])))
+for(i in 2:500){
+namesi<-names(unlist(xmlToList(docs[[i]])))
+commonNames<-Reduce(intersect, list(commonNames, namesi))
+}
+
+
+
+#Subset on common column names
+xml <- unlist(xmlToList(docs[[1]]))
+xmldf <- xml[commonNames]
+
+for(i in 2:500){
+xml <- unlist(xmlToList(docs[[i]]))
+xml <- xml[commonNames]
+xmldf<-rbind(xmldf,xml)
+}
+
+write.csv(xmldf, "USPTO2.csv")
+
+```
+
+
+#Make csv file containing only shared column names of the 2nd set of 500 patents
+```{r}
+
+#Find common column names for 2nd 500 patents
+commonNames<-names(unlist(xmlToList(docs[[501]])))
+for(i in 502:750){
+namesi<-names(unlist(xmlToList(docs[[i]])))
+commonNames<-Reduce(intersect, list(commonNames, namesi))
+}
+
+#Subset on common column names
+xml <- unlist(xmlToList(docs[[501]]))
+xmldf <- xml[commonNames]
+
+for(i in 502:750){
+xml <- unlist(xmlToList(docs[[i]]))
+xml <- xml[commonNames]
+xmldf<-rbind(xmldf,xml)
+}
+
+write.csv(xmldf, "USPTO3.csv")
+
+```
+
+
+
+
+#Make csv file containing only shared column names of the 3rd set of 500 patents
+```{r}
+
+#Find common column names for 3rd 500 patents
+commonNames<-names(unlist(xmlToList(docs[[751]])))
+for(i in 752:1001){
+namesi<-names(unlist(xmlToList(docs[[i]])))
+commonNames<-Reduce(intersect, list(commonNames, namesi))
+}
+
+#Subset on common column names
+xml <- unlist(xmlToList(docs[[751]]))
+xmldf <- xml[commonNames]
+
+```
+
+```{r}
+xml1<-unlist(xmlToList(docs[[1]]))
+xml1 <- xml1[FinalNames]
+xml2<-unlist(xmlToList(docs[[2]]))
+xml2 <- xml2[FinalNames]
+xmldf<-rbind(xml1,xml2)
+
+
+for(i in 3:1451){
+xml <- unlist(xmlToList(docs[[i]]))
+xml <- xml[FinalNames]
+xmldf<-rbind(xmldf,xml)
+}
+
+write.csv(xmldf, "USPTO.csv")
+dim(xmldf)
+```
+
+```{r}
+for(i in 500:750){
+xml <- unlist(xmlToList(docs[[i]]))
+xml<-xml[match(commonNames, names(xml))]
+xmldf<-rbind(xmldf,xml)
+}
+
+
+```
+
+
+```{r}
+#Find unique names
+UniqueNames <- unique(c(cancerNames,commonNames))
+for(i in 1:1451){
+namesi<-names(unlist(xmlToList(docs[[i]])))
+UniqueNames <- unique(c(UniqueNames,namesi))
+}
+```
+
+
+```{r}
+xml1<-unlist(xmlToList(docs[[1]]))
+xml1 <- xml1[UniqueNames]
+xml2<-unlist(xmlToList(docs[[2]]))
+xml2 <- xml2[UniqueNames]
+xmldf<-rbind(xml1,xml2)
+
+
+for(i in 3:1451){
+xml <- unlist(xmlToList(docs[[i]]))
+xml <- xml[UniqueNames]
+xmldf<-rbind(xmldf,xml)
+}
+dim(xmldf)
+#Remove columns which have more than 90% NA
+dftrim<-xmldf[, -which(colMeans(is.na(xmldf)) > 0.9)]
+
+write.csv(xmldf, "USPTOfull.csv")
+dim(xmldf)
+```
+
+if(commonNames %in% names(docs[[i]])){
+  
+  
+}
+
+
+
+for(i in 1:10){
+  for(j in commonNames){
+    match(j, names(xml)) 
+}
+}
+
+commonNames %in% names(xml)
+
+for(i in 1:10){
+  for(j in commonNames){
+    (j %in% names(xml))
+}  
+}
+
+
+#Look for patents with "cancer" in the title
+###```{r}
+NameVec<-c()
+for(i in 1:1451){
+  xml <- unlist(xmlToList(docs[[i]]))
+  PatentName<-xml["us-bibliographic-data-grant.invention-title.text"]
+  NameVec<-c(NameVec, PatentName)
+}
+CancerPatents<-grep("cancer",NameVec, ignore.case = TRUE)
+grep("tumor",NameVec, ignore.case = TRUE)
+NameVec[CancerPatents]
+
+cancerNames<-names(unlist(xmlToList(docs[[1157]])))
+for(i in CancerPatents){
+namesi<-names(unlist(xmlToList(docs[[i]])))
+cancerNames<-Reduce(intersect, list(cancerNames, namesi))
+}
+
+cancdf<-unlist(xmlToList(docs[[1157]]))
+cancdf<-cancdf[cancerNames]
+for(i in CancerPatents){
+xml <- unlist(xmlToList(docs[[i]]))
+xml<-xml[cancerNames]
+cancdf<-rbind(cancdf,xml)
+}
+
+###```
+
+
+#Work in progress
+###```{r}
+
+#create a vector of lengths of each xml string
+
+lengths<-c()
+for(i in 1:1451){
+xml <- xmlToList(docs[[i]])
+xml <- unlist(xml) 
+lengths<-c(lengths, length(xml))
+}
+min(lengths)
+grep(195, lengths)
+lengths[428]
+xml1<-as.data.frame(xml_data)
+
+
+#The rows in the data frame produced are misaligned
+xmldf<-data.frame()
+for(i in 1:10){
+xml_data <- xmlToList(docs[[i]])
+xml_data <- unlist(xml_data)
+xmldf<-rbind(xmldf,xml_data)
+}
+xmldf[]
+?rbind
+
+
+```
+
