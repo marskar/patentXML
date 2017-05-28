@@ -1,0 +1,1 @@
+curl -O https://bulkdata.uspto.gov/data2/patent/grant/redbook/fulltext/2017/"$1"

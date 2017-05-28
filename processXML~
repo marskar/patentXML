@@ -1,0 +1,12 @@
+#!/bin/bash -x
+f=$(echo $1 | cut -f 1 -d '.')
+if [ ! -d "$f" ]; then
+  mkdir "$f"
+fi 
+
+Rscript xml2csv2.R "$1"
+
+cd "$1"
+ls | xargs cat > "$@.csv"
+cat ../colnames "$@.csv" > "$@.csv"
+cd ~

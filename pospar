@@ -1,0 +1,7 @@
+#!/bin/bash
+
+echo "Positional Parameters"
+echo 'bash = ' bash
+echo ' = ' 
+echo ' = ' 
+echo ' = ' 

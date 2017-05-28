@@ -1,0 +1,14 @@
+#!/bin/bash -x
+curl -O https://bulkdata.uspto.gov/data2/patent/grant/redbook/fulltext/2017/"$1"
+unzip "$1"
+f=$(echo $1 | cut -f 1 -d '.') #removes extension                                                    
+if [ ! -d "$f" ]; then
+  mkdir "$f"
+fi
+
+Rscript xml2csv2.R "$f.xml"
+
+cd "$f"
+ls | xargs cat > "$f.csv"
+cat ../colnames "$f.csv" > "$f.csv"
+cd ~
